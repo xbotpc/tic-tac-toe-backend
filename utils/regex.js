@@ -1,0 +1,1 @@
+export const isNumber = (value: number) => value.toString().match(/^[0-9]+$/);
