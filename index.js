@@ -5,15 +5,15 @@ import { createGame } from './BL/createGame.js';
 import { onPlayerMove } from './BL/gameplay.js';
 import joinGame from './BL/joinGame.js';
 
-const io = new Server(8080, {
-    cors: {
-        origin: ['http://localhost:3000']
-    }
-});
-
 dotenv.config();
 
-const { DB_USERNAME, DB_PASSWORD, DB_CLUSTER_LINK } = process.env;
+const { ALLOWED_DOMAIN, DB_USERNAME, DB_PASSWORD, DB_CLUSTER_LINK } = process.env;
+
+const io = new Server(8080, {
+    cors: {
+        origin: [ALLOWED_DOMAIN]
+    }
+});
 
 mongoose.connect(`mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_CLUSTER_LINK}?retryWrites=true&w=majority`,
     { useNewUrlParser: true, useUnifiedTopology: true })
@@ -47,7 +47,7 @@ mongoose.connect(`mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_CLUSTER_LINK}
                 if (gameID === -1 || rowID === -1 || columnID === -1) {
                     console.log('Bad Request')
                 } else {
-                    const response= await onPlayerMove({ gameID, rowID, columnID });
+                    const response = await onPlayerMove({ gameID, rowID, columnID });
                     io.to(gameID).emit('onMoveResponse', response);
                 }
             });
