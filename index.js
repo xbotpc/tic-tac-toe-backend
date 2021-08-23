@@ -9,7 +9,7 @@ dotenv.config();
 
 const { ALLOWED_DOMAIN, DB_USERNAME, DB_PASSWORD, DB_CLUSTER_LINK } = process.env;
 
-const io = new Server(8080, {
+const io = new Server(8081, {
     cors: {
         origin: [ALLOWED_DOMAIN]
     }
