@@ -4,55 +4,56 @@ import { Server } from 'socket.io';
 import { createGame } from './BL/createGame.js';
 import { onPlayerMove } from './BL/gameplay.js';
 import joinGame from './BL/joinGame.js';
+import { CONNECTION_EVENTS, EMIT_EVENTS, REQUEST_ERROR } from './CONSTANTS/socket.js';
 
 dotenv.config();
 
 const { ALLOWED_DOMAIN, DB_USERNAME, DB_PASSWORD, DB_CLUSTER_LINK } = process.env;
 
-const io = new Server(8081, {
-    cors: {
-        origin: [ALLOWED_DOMAIN]
-    }
-});
+try {
+    await mongoose.connect(`mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_CLUSTER_LINK}?retryWrites=true&w=majority`,
+        { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
+    console.log('DB CONNECTION SUCCESSFUL');
 
-mongoose.connect(`mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_CLUSTER_LINK}?retryWrites=true&w=majority`,
-    { useNewUrlParser: true, useUnifiedTopology: true })
-    .then((res) => {
-        console.log('DB CONNECTION SUCCESSFUL');
-        io.on('connection', (socket) => {
+    const io = new Server(8081, {
+        cors: {
+            origin: [ALLOWED_DOMAIN]
+        }
+    });
+    io.on(CONNECTION_EVENTS.CONNECTION, (socket) => {
 
-            socket.on('createRoom', async ({ roomName = '' }) => {
-                if (roomName === '') {
-                    // socket.emit('post-connection', { socketID: socket.id });
-                    console.log('hrerer')
-                } else {
-                    const response = await createGame({ roomID: socket.id, roomName });
-                    socket.join(response.gameID);
-                    socket.emit('roomJoined', response);
-                }
-            });
-
-            socket.on('joinRoom', async ({ roomName = '' }) => {
-                if (roomName === '') {
-                    // socket.emit('post-connection', { socketID: socket.id });
-                    console.log('hrerer')
-                } else {
-                    const response = await joinGame({ roomID: socket.id, roomName });
-                    socket.join(response.gameID);
-                    socket.emit('roomJoined', response);
-                }
-            });
-
-            socket.on('blockClick', async ({ gameID = -1, rowID = -1, columnID = -1 }) => {
-                if (gameID === -1 || rowID === -1 || columnID === -1) {
-                    console.log('Bad Request')
-                } else {
-                    const response = await onPlayerMove({ gameID, rowID, columnID });
-                    io.to(gameID).emit('onMoveResponse', response);
-                }
-            });
+        socket.on(CONNECTION_EVENTS.CREATE_ROOM, async ({ roomName = '' }) => {
+            if (roomName === '') {
+                // socket.emit('post-connection', { socketID: socket.id });
+                console.error(REQUEST_ERROR.ROOM_NAME_IS_MISSING);
+            } else {
+                const response = await createGame({ roomID: socket.id, roomName });
+                socket.join(response.gameID);
+                socket.emit(EMIT_EVENTS.ROOM_JOINED, response);
+            }
         });
 
-    }).catch((err) => {
-        console.error('err', err);
+        socket.on(CONNECTION_EVENTS.JOIN_ROOM, async ({ roomName = '' }) => {
+            if (roomName === '') {
+                // socket.emit('post-connection', { socketID: socket.id });
+                console.error(REQUEST_ERROR.ROOM_NAME_IS_MISSING);
+            } else {
+                const response = await joinGame({ roomID: socket.id, roomName });
+                socket.join(response.gameID);
+                socket.emit(EMIT_EVENTS.ROOM_JOINED, response);
+            }
+        });
+
+        socket.on(CONNECTION_EVENTS.BLOCK_CLICK, async ({ gameID = -1, rowID = -1, columnID = -1 }) => {
+            if (gameID === -1 || rowID === -1 || columnID === -1) {
+                console.error(REQUEST_ERROR.BAD_REQUEST);
+            } else {
+                const response = await onPlayerMove({ gameID, rowID, columnID });
+                io.to(gameID).emit(EMIT_EVENTS.ON_MOVE_RESPONSE, response);
+            }
+        });
     });
+} catch (error) {
+    console.error('MONGO CONNECTION ERROR', err);
+
+}
