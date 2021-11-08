@@ -14,7 +14,7 @@ export const onPlayerMove = async ({ gameID, roomID, rowID, columnID }) => {
             if (!isEmpty(currentGame.moves.length)) {
                 const exists = currentGame.moves.find(x => x.rowID === rowID && x.columnID === columnID);
                 if (exists) {
-                    return { message: 'Illegal Move', gameData: generateGameData(currentGame) };
+                    return { message: 'Illegal Move', gameData: generateGameData(currentGame), nextMove: currentGame.nextMoveID };
                 }
                 const currentMove = currentGame.moves[currentGame.moves.length - 1].type === 'cross' ? 'circle' : 'cross';
 
@@ -27,34 +27,35 @@ export const onPlayerMove = async ({ gameID, roomID, rowID, columnID }) => {
                         createdAt: new Date()
                     },
                     nextMove: currentMove === 'cross' ? 'circle' : 'cross',
+                    nextMoveID: currentGame.nextMoveID === currentGame.roomIDs.creator ? currentGame.roomIDs.joinee : currentGame.roomIDs.creator
                 });
 
                 // Check if current player has won the game
                 const sameRowData = currentGame.moves.filter(x => x.rowID === rowID);
                 const completeRowStrike = sameRowData.length === 3 && sameRowData.every(x => x.type === currentMove);
                 if (completeRowStrike) {
-                    return { message: 'winner', gameData: generateGameData(currentGame) };
+                    return { message: 'winner', gameData: generateGameData(currentGame), nextMove: currentGame.nextMoveID, winnerID: roomID };
                 }
 
                 const sameColumnData = currentGame.moves.filter(x => x.columnID === columnID);
                 const completeColumnStrike = sameColumnData.length === 3 && sameColumnData.every(x => x.type === currentMove);
                 if (completeColumnStrike) {
-                    return { message: 'winner', gameData: generateGameData(currentGame) };
+                    return { message: 'winner', gameData: generateGameData(currentGame), nextMove: currentGame.nextMoveID, winnerID: roomID };
                 }
 
                 if ((rowID + columnID) % 2 === 0) {
                     const firstDiagonalData = currentGame.moves.filter((x, i) => (x.columnID === 0 && x.rowID === 2) || (x.columnID === 1 && x.rowID === 1) || (x.columnID === 2 && x.rowID === 0));
                     const completeFirstDiagonalStrike = firstDiagonalData.length === 3 && firstDiagonalData.every(x => x.type === currentMove);
                     if (completeFirstDiagonalStrike) {
-                        return { message: 'winner', gameData: generateGameData(currentGame) };
+                        return { message: 'winner', gameData: generateGameData(currentGame), nextMove: currentGame.nextMoveID, winnerID: roomID };
                     }
                     const secondDiagonalData = currentGame.moves.filter((x) => x.columnID === x.rowID);
                     const completeSecondDiagonalStrike = secondDiagonalData.length === 3 && secondDiagonalData.every(x => x.type === currentMove);
                     if (completeSecondDiagonalStrike) {
-                        return { message: 'winner', gameData: generateGameData(currentGame) };
+                        return { message: 'winner', gameData: generateGameData(currentGame), nextMove: currentGame.nextMoveID, winnerID: roomID };
                     }
                 }
-                return { message: 'no winner yet', gameData: generateGameData(currentGame) };
+                return { message: 'no winner yet', gameData: generateGameData(currentGame), nextMove: currentGame.nextMoveID };
             }
             currentGame = await addMove(gameID, {
                 move: {
@@ -65,11 +66,12 @@ export const onPlayerMove = async ({ gameID, roomID, rowID, columnID }) => {
                     createdAt: new Date()
                 },
                 nextMove: 'circle',
+                nextMoveID: currentGame.roomIDs.joinee
             });
-            return { message: 'no winner yet', gameData: generateGameData(currentGame) };
-        } return { message: 'cheater', gameData: generateGameData({ move: [] }) }
+            return { message: 'no winner yet', gameData: generateGameData(currentGame), nextMove: currentGame.nextMoveID };
+        } return { message: 'cheater', gameData: generateGameData({ move: [] }), nextMove: currentGame.nextMoveID }
     } catch (error) {
         console.error('error', error);
-        return [{ message: 'error', gameData: generateGameData({ move: [] }) }, '']
+        return { message: 'error', gameData: generateGameData({ move: [] }), nextMove: currentGame.nextMoveID }
     }
 }

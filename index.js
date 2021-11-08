@@ -48,12 +48,20 @@ try {
             if (gameID === -1 || rowID === -1 || columnID === -1) {
                 console.error(REQUEST_ERROR.BAD_REQUEST);
             } else {
-                const response = await onPlayerMove({ gameID, rowID, columnID });
+                const response = await onPlayerMove({ gameID, roomID: socket.id, rowID, columnID });
                 io.to(gameID).emit(EMIT_EVENTS.ON_MOVE_RESPONSE, response);
             }
         });
+
+        // socket.on(CONNECTION_EVENTS.TURN_CHANGE, async ({ gameID = -1, turn = 'self' }) => {
+        //     if (gameID === -1 || rowID === -1 || columnID === -1) {
+        //         console.error(REQUEST_ERROR.BAD_REQUEST);
+        //     } else {
+        //         const response = await onPlayerMove({ gameID, rowID, columnID });
+        //         io.to(gameID).emit(EMIT_EVENTS.ON_MOVE_RESPONSE, response);
+        //     }
+        // });
     });
 } catch (error) {
-    console.error('MONGO CONNECTION ERROR', err);
-
+    console.error('MONGO CONNECTION ERROR', error);
 }

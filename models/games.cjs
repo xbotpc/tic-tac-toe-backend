@@ -8,6 +8,7 @@ const gamesSchema = new mongoose.Schema({
     },
     name: { type: String, required: true },
     nextMove: { type: String, defaultData: 'cross', required: true },
+    nextMoveID: { type: String, defaultData: '', required: false },
     moves: [{
         roomID: { type: String, required: true },
         type: { type: String, required: true },

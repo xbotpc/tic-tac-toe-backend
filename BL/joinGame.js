@@ -12,11 +12,13 @@ const joinGame = async ({ roomName, roomID: joineeID }) => {
             roomIDs: {
                 ...savedGame.roomIDs,
                 joinee: joineeID
-            }
+            },
+            nextMoveID: !isEmpty(savedGame.moves.length) ? joineeID : savedGame.roomIDs.creator
         });
         return {
             gameID: savedGame.id,
             next: 'circle',
+            nextMove: joineeID,
             message: `You have joined ${roomName}.`,
             gameData: generateGameData(savedGame),
         }

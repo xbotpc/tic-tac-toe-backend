@@ -3,6 +3,7 @@ export const CONNECTION_EVENTS = {
     CREATE_ROOM: 'createRoom',
     JOIN_ROOM: 'joinRoom',
     BLOCK_CLICK: 'blockClick',
+    // TURN_CHANGE: 'turnChange'
 }
 
 export const EMIT_EVENTS = {
