@@ -8,19 +8,21 @@ const joinGame = async ({ roomName, roomID: joineeID }) => {
         if (isEmpty(savedGame) || isEmpty(savedGame.id)) {
             return null;
         }
+        const latestGameSession = savedGame.games[savedGame.games.length - 1];
         await updateGame(savedGame.id, {
-            roomIDs: {
-                ...savedGame.roomIDs,
+            playerIDs: {
+                ...savedGame.playerIDs,
                 joinee: joineeID
             },
-            nextMoveID: !isEmpty(savedGame.moves.length) ? joineeID : savedGame.roomIDs.creator
+            nextMoveID: !isEmpty(latestGameSession.moves.length) ? joineeID : savedGame.playerIDs.creator
         });
         return {
             gameID: savedGame.id,
+            sessionID: latestGameSession.sessionID,
             next: 'circle',
-            nextMove: !isEmpty(savedGame.moves.length) ? joineeID : savedGame.roomIDs.creator,
+            nextMove: !isEmpty(latestGameSession.moves.length) ? joineeID : savedGame.playerIDs.creator,
             message: `You have joined ${roomName}.`,
-            gameData: generateGameData(savedGame),
+            gameData: generateGameData(latestGameSession),
         }
     } catch (error) {
         console.error('error', error);

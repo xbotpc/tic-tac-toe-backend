@@ -3,25 +3,31 @@ import { create as saveGame, findByRoomName } from '../DAL/game.js';
 import generateGameData from '../utils/generateGame.js';
 import isEmpty from '../utils/isEmpty.js';
 
-export const createGame = async ({ roomName, roomID }) => {
+export const createGame = async ({ roomName, roomID: playerID }) => {
     try {
         const existingGame = await findByRoomName(roomName);
         if (isEmpty(existingGame)) {
             const savedGame = await saveGame({
                 id: uuidV4(),
                 name: roomName,
-                roomIDs: { creator: roomID },
+                playerIDs: { creator: playerID },
+                games: [{
+                    sessionID: uuidV4(),
+                    winnerID: '',
+                    finished: false,
+                }],
                 nextMove: 'cross',
-                nextMoveID: roomID,
+                nextMoveID: playerID,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-                createdBy: roomID,
-                updatedBy: roomID
+                createdBy: playerID,
+                updatedBy: playerID
             });
             return {
                 gameID: savedGame.id,
+                sessionID: savedGame.games[0].sessionID,
                 next: 'cross',
-                nextMove: roomID,
+                nextMove: playerID,
                 message: `You have joined ${roomName}.`,
                 gameData: generateGameData({ moves: [] }),
             }

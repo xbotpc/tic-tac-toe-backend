@@ -3,12 +3,13 @@ export const CONNECTION_EVENTS = {
     CREATE_ROOM: 'createRoom',
     JOIN_ROOM: 'joinRoom',
     BLOCK_CLICK: 'blockClick',
-    // TURN_CHANGE: 'turnChange'
+    NEW_GAME: 'newGame'
 }
 
 export const EMIT_EVENTS = {
     ROOM_JOINED: 'roomJoined',
-    ON_MOVE_RESPONSE: 'onMoveResponse'
+    ON_MOVE_RESPONSE: 'onMoveResponse',
+    ON_NEW_GAME: 'onNewGame'
 }
 
 export const REQUEST_ERROR = {
