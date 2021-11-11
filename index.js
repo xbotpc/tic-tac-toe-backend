@@ -14,6 +14,10 @@ const server = http.createServer(app);
 
 const { ALLOWED_DOMAIN, DB_USERNAME, DB_PASSWORD, DB_CLUSTER_LINK } = process.env;
 
+app.use(cors({
+    origin: ALLOWED_DOMAIN
+}));
+
 try {
     await mongoose.connect(`mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_CLUSTER_LINK}?retryWrites=true&w=majority`,
         { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
@@ -21,10 +25,7 @@ try {
 
     const io = new Server(server, {
         cors: {
-            //Check second if doesn't work
             origin: [ALLOWED_DOMAIN],
-            //Check first if doesn't work
-            methods: ['GET', 'POST']
         }
     });
     io.on(CONNECTION_EVENTS.CONNECTION, (socket) => {
