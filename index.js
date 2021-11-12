@@ -2,6 +2,7 @@ import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
 import http from 'http';
+// import cors from 'cors';
 import { Server } from 'socket.io';
 import { createGame } from './BL/createGame.js';
 import { generateNewGame, onPlayerMove } from './BL/gameplay.js';
@@ -9,21 +10,21 @@ import joinGame from './BL/joinGame.js';
 import { CONNECTION_EVENTS, EMIT_EVENTS, REQUEST_ERROR } from './CONSTANTS/socket.js';
 
 dotenv.config();
-const app = express();
-const server = http.createServer(app);
+// const app = express();
+// const server = http.createServer(app);
 
 const { ALLOWED_DOMAIN, DB_USERNAME, DB_PASSWORD, DB_CLUSTER_LINK } = process.env;
 
-app.use(cors({
-    origin: ALLOWED_DOMAIN
-}));
+// app.use(cors({
+//     origin: ALLOWED_DOMAIN
+// }));
 
 try {
     await mongoose.connect(`mongodb+srv://${DB_USERNAME}:${DB_PASSWORD}@${DB_CLUSTER_LINK}?retryWrites=true&w=majority`,
         { useNewUrlParser: true, useUnifiedTopology: true, useFindAndModify: false });
     console.log('DB CONNECTION SUCCESSFUL');
 
-    const io = new Server(server, {
+    const io = new Server(8081, {
         cors: {
             origin: [ALLOWED_DOMAIN],
         }
